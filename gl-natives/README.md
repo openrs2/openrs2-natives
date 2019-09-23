@@ -25,21 +25,5 @@ bindings - the same problem happens with the original jaggl bindings and build
 667 of the client. I also think it is unlikely to be the client, as the same
 client code works on Windows and Linux.
 
-## Copyright
-
-Copyright (c) 2019 OpenRS2 Authors
-
-OpenRS2 GL Natives is free software: you can redistribute it and/or modify it
-under the terms of version 3.0 of the GNU Lesser General Public License as
-published by the Free Software Foundation.
-
-OpenRS2 GL Natives is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for
-more details.
-
-You should have received a copy of the GNU Lesser General Public License along
-with OpenRS2 GL Natives. If not, see <https://www.gnu.org/licenses/>.
-
 [macos-perf]: https://youtrack.jetbrains.com/issue/JBR-444
 [jbr]: https://confluence.jetbrains.com/display/JBR/JetBrains+Runtime
