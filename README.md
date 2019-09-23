@@ -10,7 +10,7 @@ jagmisc native libraries.
 Building OpenRS2 Natives requires the following pieces of software on all
 platforms:
 
-* [Java Development Kit][jdk] (version 12 or later)
+* [Java Development Kit][jdk] (version 7 or later)
 * [Apache Maven][maven] (version 3.3.9 or later)
 
 ### Platform-specific dependencies
@@ -71,10 +71,6 @@ manager. For example:
 * Debian-based systems: `apt install openjdk-12-jdk maven gcc libgl1-mesa-dev`
 * RPM-based systems: `yum install java-12-openjdk-devel maven gcc mesa-libGL-devel`
 * ArchLinux-based systems: `pacman -S jdk-openjdk maven gcc mesa`
-
-As OpenRS2 Natives depends on a modern version of Java (at the time of writing),
-you will probably need to use a similarly modern version of your Linux
-distribution or enable its backports repository.
 
 `-headless` packages are not sufficient as the `gl-natives` module is linked
 with `libjawt`.
