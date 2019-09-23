@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>dev.openrs2</groupId>
+    <artifactId>openrs2-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>openrs2-natives</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>OpenRS2 Natives</name>
+  <description>
+    Open-source replacements for the jaggl, jaggl_dri and jagmisc native
+    libraries.
+  </description>
+
+  <scm>
+    <connection>scm:git:https://git.openrs2.dev/openrs2/openrs2-natives.git</connection>
+    <developerConnection>scm:git:git@git.openrs2.dev:openrs2/openrs2-natives.git</developerConnection>
+    <url>https://git.openrs2.dev/openrs2/openrs2-natives</url>
+  </scm>
+  <issueManagement>
+    <system>Gitea</system>
+    <url>https://git.openrs2.dev/openrs2/openrs2-natives/issues</url>
+  </issueManagement>
+  <ciManagement>
+    <system>Jenkins</system>
+    <url>https://build.openrs2.dev/job/openrs2-natives/</url>
+  </ciManagement>
+
+  <properties>
+    <nar.javaHome>${java.home}</nar.javaHome>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>openrs2</id>
+      <name>OpenRS2</name>
+      <url>https://repo.openrs2.dev/repository/openrs2/</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>openrs2-snapshots</id>
+      <name>OpenRS2 Snapshots</name>
+      <url>https://repo.openrs2.dev/repository/openrs2-snapshots/</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>com.github.maven-nar</groupId>
+        <artifactId>nar-maven-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <libraries>
+            <library>
+              <type>shared</type>
+              <subSystem>gui</subSystem>
+              <linkCPP>false</linkCPP>
+            </library>
+          </libraries>
+          <c>
+            <optimize>full</optimize>
+          </c>
+          <java>
+            <include>true</include>
+          </java>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>mac</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <modules>
+        <module>gl-natives</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>unix</id>
+      <activation>
+        <os>
+          <family>unix</family>
+          <name>!mac os x</name>
+        </os>
+      </activation>
+      <modules>
+        <module>gl-natives</module>
+        <module>gl-dri-natives</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>windows</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <modules>
+        <module>gl-natives</module>
+        <module>misc-natives</module>
+      </modules>
+    </profile>
+  </profiles>
+</project>
