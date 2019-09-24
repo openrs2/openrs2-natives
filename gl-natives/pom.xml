@@ -18,12 +18,6 @@
     implementation supports both modern and legacy versions of Java on macOS,
     as it may be backed by a CALayer or an NSView.
   </description>
-  <licenses>
-    <license>
-      <name>GNU Lesser General Public License v3.0</name>
-      <url>https://www.gnu.org/licenses/lgpl-3.0.txt</url>
-    </license>
-  </licenses>
 
   <build>
     <plugins>

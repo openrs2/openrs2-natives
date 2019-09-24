@@ -16,12 +16,6 @@
     Reimplementation of the jaggl_dri native library, which implements the DRI
     hack to support the open-source Mesa drivers on UNIX systems.
   </description>
-  <licenses>
-    <license>
-      <name>GNU Lesser General Public License v3.0</name>
-      <url>https://www.gnu.org/licenses/lgpl-3.0.txt</url>
-    </license>
-  </licenses>
 
   <build>
     <plugins>

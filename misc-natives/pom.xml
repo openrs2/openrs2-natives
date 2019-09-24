@@ -17,10 +17,4 @@
     high-precision timer for Windows systems. It is queried from a thread
     pinned to a single processor core to work around hardware bugs.
   </description>
-  <licenses>
-    <license>
-      <name>GNU Lesser General Public License v3.0</name>
-      <url>https://www.gnu.org/licenses/lgpl-3.0.txt</url>
-    </license>
-  </licenses>
 </project>

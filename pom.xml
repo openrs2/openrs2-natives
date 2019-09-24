@@ -17,6 +17,12 @@
     Open-source replacements for the jaggl, jaggl_dri and jagmisc native
     libraries.
   </description>
+  <licenses>
+    <license>
+      <name>GNU Lesser General Public License v3.0</name>
+      <url>https://www.gnu.org/licenses/lgpl-3.0.txt</url>
+    </license>
+  </licenses>
 
   <scm>
     <connection>scm:git:https://git.openrs2.dev/openrs2/openrs2-natives.git</connection>
