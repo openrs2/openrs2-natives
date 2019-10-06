@@ -101,7 +101,6 @@ All code and data is licensed under version 3.0 (and only version 3.0) of the
 [GNU Lesser General Public License][lgpl]. The full terms are available in the
 `COPYING.LESSER` file.
 
-
 ## Copyright
 
 Copyright (c) 2019 OpenRS2 Authors
