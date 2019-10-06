@@ -95,6 +95,24 @@ to `i386`:
 
 Run `mvn verify` to build the code and package it.
 
+## Performing a release
+
+This works slightly differently to a standard Maven release as it must be
+performed manually for each operating system and architecture.
+
+First prepare the release to create the tag:
+
+    mvn -Dmac,unix,windows release:prepare
+
+The temporary release files may then be deleted:
+
+    mvn -Dmac,unix,windows release:clean
+
+On each operating system and architecture, checkout the new tag and manually
+deploy the release:
+
+    mvn -Prelease <optional flags for cross-compilation> clean deploy
+
 ## License
 
 All code and data is licensed under version 3.0 (and only version 3.0) of the
