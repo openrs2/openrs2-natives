@@ -1,5 +1,7 @@
 # OpenRS2 Natives
 
+[![Build status badge](https://build.openrs2.dev/buildStatus/icon?job=openrs2-natives&build=lastCompleted)](https://build.openrs2.dev/job/openrs2-natives/)
+
 ## Introduction
 
 OpenRS2 Natives are open-source replacements for the jaggl, jaggl\_dri and
