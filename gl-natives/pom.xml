@@ -19,6 +19,10 @@
     as it may be backed by a CALayer or an NSView.
   </description>
 
+  <properties>
+    <openrs2.jawtDirectory>${nar.javaHome}/lib</openrs2.jawtDirectory>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
@@ -30,7 +34,7 @@
               <lib>
                 <type>shared</type>
                 <name>jawt</name>
-                <directory>${nar.javaHome}/lib</directory>
+                <directory>${openrs2.jawtDirectory}</directory>
               </lib>
             </libs>
           </linker>
@@ -81,25 +85,9 @@
           <exists>${nar.javaHome}/../Libraries</exists>
         </file>
       </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.github.maven-nar</groupId>
-            <artifactId>nar-maven-plugin</artifactId>
-            <configuration>
-              <linker>
-                <libs>
-                  <lib>
-                    <type>shared</type>
-                    <name>jawt</name>
-                    <directory>${nar.javaHome}/../Libraries</directory>
-                  </lib>
-                </libs>
-              </linker>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
+      <properties>
+        <openrs2.jawtDirectory>${nar.javaHome}/../Libraries</openrs2.jawtDirectory>
+      </properties>
     </profile>
     <profile>
       <id>unix</id>
