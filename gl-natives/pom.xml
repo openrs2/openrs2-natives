@@ -19,12 +19,43 @@
     as it may be backed by a CALayer or an NSView.
   </description>
 
-  <properties>
-    <openrs2.jawtDirectory>${nar.javaHome}/lib</openrs2.jawtDirectory>
-  </properties>
-
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <exportAntProperties>true</exportAntProperties>
+              <target>
+                <pathconvert property="openrs2.jawtDirectory">
+                  <first>
+                    <fileset dir="${nar.javaHome}">
+                      <include name="lib/**/jawt.lib" />
+                      <include name="lib/**/libjawt.dylib" />
+                      <include name="lib/**/libjawt.so" />
+                      <!-- legacy Java on macOS -->
+                      <include name="../Libraries/libjawt.dylib" />
+                    </fileset>
+                  </first>
+                  <regexpmapper from="(.*)/" to="\1" handledirsep="true" />
+                </pathconvert>
+                <fail message="Failed to find jawt directory">
+                  <condition>
+                    <equals arg1="${openrs2.jawtDirectory}" arg2="" />
+                  </condition>
+                </fail>
+                <echo>Found jawt directory: ${openrs2.jawtDirectory}</echo>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>com.github.maven-nar</groupId>
         <artifactId>nar-maven-plugin</artifactId>
@@ -77,17 +108,6 @@
           </plugin>
         </plugins>
       </build>
-    </profile>
-    <profile>
-      <id>mac-legacy</id>
-      <activation>
-        <file>
-          <exists>${nar.javaHome}/../Libraries</exists>
-        </file>
-      </activation>
-      <properties>
-        <openrs2.jawtDirectory>${nar.javaHome}/../Libraries</openrs2.jawtDirectory>
-      </properties>
     </profile>
     <profile>
       <id>unix</id>
