@@ -54,8 +54,8 @@
 #define JAGGL_GET_BUFFER(env, obj, obj_off) \
 	void *obj ## _ptr; \
 	if (obj) { \
-		void *obj ## _carry = (*env)->GetDirectBufferAddress(env, obj); \
-		obj ## _ptr = (void *) ((uintptr_t) obj ## _carry + (size_t) obj_off); \
+		void *obj ## _carray = (*env)->GetDirectBufferAddress(env, obj); \
+		obj ## _ptr = (void *) ((uintptr_t) obj ## _carray + (size_t) obj_off); \
 	} else { \
 		obj ## _ptr = NULL; \
 	}
