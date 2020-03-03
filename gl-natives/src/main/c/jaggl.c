@@ -1161,7 +1161,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 				 * nothing above the Canvas in the Frame.
 				 */
 				jint x = dsi->bounds.x; // should be dsi->bounds.x - insets.left
-				jint y = 0; // should be dsi->bounds.y - insets.top
+				jint y = 0;             // should be dsi->bounds.y - insets.top
 				jaggl_layer.frame = CGRectMake(x, platform_info.windowLayer.bounds.size.height - y - dsi->bounds.height, dsi->bounds.width, dsi->bounds.height);
 				[jaggl_layer setNeedsDisplay];
 			});
