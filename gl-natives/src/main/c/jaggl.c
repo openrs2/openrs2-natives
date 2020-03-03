@@ -881,14 +881,14 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 	}
 
 #if defined(__unix__)
-	JAWT_X11DrawingSurfaceInfo *platformInfo = (JAWT_X11DrawingSurfaceInfo *) dsi->platformInfo;
-	if (!platformInfo) {
+	JAWT_X11DrawingSurfaceInfo *platform_info = (JAWT_X11DrawingSurfaceInfo *) dsi->platformInfo;
+	if (!platform_info) {
 		goto dsi_free;
 	}
 
-	jaggl_display = platformInfo->display;
-	jaggl_drawable = platformInfo->drawable;
-	jaggl_visual_id = platformInfo->visualID;
+	jaggl_display = platform_info->display;
+	jaggl_drawable = platform_info->drawable;
+	jaggl_visual_id = platform_info->visualID;
 
 	if (!glXQueryExtension(jaggl_display, NULL, NULL)) {
 		goto dsi_free;
@@ -959,12 +959,12 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 		goto dsi_free;
 	}
 #elif defined(_WIN32)
-	JAWT_Win32DrawingSurfaceInfo *platformInfo = (JAWT_Win32DrawingSurfaceInfo *) dsi->platformInfo;
-	if (!platformInfo) {
+	JAWT_Win32DrawingSurfaceInfo *platform_info = (JAWT_Win32DrawingSurfaceInfo *) dsi->platformInfo;
+	if (!platform_info) {
 		goto dsi_free;
 	}
 
-	jaggl_window = platformInfo->hwnd;
+	jaggl_window = platform_info->hwnd;
 
 	jaggl_device = GetDC(jaggl_window);
 	if (!jaggl_device) {
@@ -1090,7 +1090,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 
 	result = JNI_TRUE;
 #elif defined(__APPLE__) && defined(__MACH__)
-	if (!dsi->platformInfo) {
+	if (!dsi->platform_info) {
 		goto dsi_free;
 	}
 
@@ -1135,7 +1135,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 		jaggl_alpha_bits = alpha_bits;
 
 		if (jaggl_calayer) {
-			id<JAWT_SurfaceLayers> platformInfo = (id<JAWT_SurfaceLayers>) dsi->platformInfo;
+			id<JAWT_SurfaceLayers> platform_info = (id<JAWT_SurfaceLayers>) dsi->platformInfo;
 
 			CGLCreateContext(jaggl_pix, NULL, &jaggl_onscreen_context);
 			if (!jaggl_onscreen_context) {
@@ -1151,7 +1151,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 				jaggl_window.contentView = jaggl_view;
 
 				jaggl_layer = [[JagGLLayer alloc] init];
-				platformInfo.layer = jaggl_layer;
+				platform_info.layer = jaggl_layer;
 
 				/*
 				 * XXX(gpe): the DSI bounds include the top/left insets, which we
@@ -1162,12 +1162,12 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 				 */
 				jint x = dsi->bounds.x; /* should be dsi->bounds.x - insets.left */
 				jint y = 0; /* should be dsi->bounds.y - insets.top */
-				jaggl_layer.frame = CGRectMake(x, platformInfo.windowLayer.bounds.size.height - y - dsi->bounds.height, dsi->bounds.width, dsi->bounds.height);
+				jaggl_layer.frame = CGRectMake(x, platform_info.windowLayer.bounds.size.height - y - dsi->bounds.height, dsi->bounds.width, dsi->bounds.height);
 				[jaggl_layer setNeedsDisplay];
 			});
 		} else {
-			struct jaggl_legacy_dsi *platformInfo = (struct jaggl_legacy_dsi *) dsi->platformInfo;
-			jaggl_view = platformInfo->view;
+			struct jaggl_legacy_dsi *platform_info = (struct jaggl_legacy_dsi *) dsi->platformInfo;
+			jaggl_view = platform_info->view;
 
 			jaggl_view_observer = [[NSNotificationCenter defaultCenter] addObserverForName:NSViewFrameDidChangeNotification object:jaggl_view queue:nil usingBlock:^(NSNotification *note) {
 				if (jaggl_context_appkit) {
