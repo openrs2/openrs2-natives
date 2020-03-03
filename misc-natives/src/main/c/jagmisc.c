@@ -27,7 +27,7 @@ static inline int64_t jagmisc_to_nanos(LARGE_INTEGER count) {
 }
 
 static DWORD WINAPI jagmisc_run(LPVOID lpParameter) {
-	/* pin this thread to the system's first processor */
+	// pin this thread to the system's first processor
 	HANDLE thread = GetCurrentThread();
 
 	DWORD_PTR affinity_mask = 0x1;
@@ -39,12 +39,12 @@ static DWORD WINAPI jagmisc_run(LPVOID lpParameter) {
 		return EXIT_FAILURE;
 	}
 
-	/* notify Java_jagex3_jagmisc_jagmisc_init() that the thread has started successfully */
+	// notify Java_jagex3_jagmisc_jagmisc_init() that the thread has started successfully
 	if (!SetEvent(jagmisc_start_event)) {
 		return EXIT_FAILURE;
 	}
 
-	/* serve time request and stop events */
+	// serve time request and stop events
 	const HANDLE handles[] = { jagmisc_time_request_event, jagmisc_stop_event };
 	for (;;) {
 		switch (WaitForMultipleObjects(2, handles, FALSE, INFINITE)) {

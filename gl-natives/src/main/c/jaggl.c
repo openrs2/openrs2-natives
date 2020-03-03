@@ -130,7 +130,7 @@ static HWND jaggl_window;
 static HDC jaggl_device;
 static HGLRC jaggl_context;
 #elif defined(__APPLE__) && defined(__MACH__)
-/* copy of JAWT_MacOSXDrawingSurfaceInfo from Java 6's jawt_md.h */
+// copy of JAWT_MacOSXDrawingSurfaceInfo from Java 6's jawt_md.h
 struct jaggl_legacy_dsi {
 	NSView *view;
 };
@@ -241,16 +241,16 @@ static void *jaggl_proc_addr(const char *name) {
 - (void)blit {
 	[lock lock];
 
-	/* get current size */
+	// get current size
 	CGSize size = self.bounds.size;
 	GLint width = (GLint) size.width;
 	GLint height = (GLint) size.height;
 
-	/* check if we need to resize the framebuffer/off-screen window */
+	// check if we need to resize the framebuffer/off-screen window
 	bool resized = width != framebuffer_width || height != framebuffer_height;
 
 	if (!framebuffer || resized) {
-		/* create new framebuffer */
+		// create new framebuffer
 		GLuint new_framebuffer, new_renderbuffer_color, new_renderbuffer_depth;
 
 		glGenFramebuffersEXT(1, &new_framebuffer);
@@ -266,11 +266,11 @@ static void *jaggl_proc_addr(const char *name) {
 		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24, width, height);
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, new_renderbuffer_depth);
 
-		/* clear the framebuffer */
+		// clear the framebuffer
 		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		/* copy the old framebuffer to the new framebuffer */
+		// copy the old framebuffer to the new framebuffer
 		if (framebuffer) {
 			glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, framebuffer);
 			glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, new_framebuffer);
@@ -280,14 +280,14 @@ static void *jaggl_proc_addr(const char *name) {
 
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
-		/* delete the old framebuffer */
+		// delete the old framebuffer
 		if (framebuffer) {
 			glDeleteRenderbuffersEXT(1, &renderbuffer_depth);
 			glDeleteRenderbuffersEXT(1, &renderbuffer_color);
 			glDeleteFramebuffersEXT(1, &framebuffer);
 		}
 
-		/* update framebuffer_* vars */
+		// update framebuffer_* vars
 		framebuffer = new_framebuffer;
 		renderbuffer_color = new_renderbuffer_color;
 		renderbuffer_depth = new_renderbuffer_depth;
@@ -295,15 +295,15 @@ static void *jaggl_proc_addr(const char *name) {
 		framebuffer_height = height;
 	}
 
-	/* bind the existing framebuffer */
+	// bind the existing framebuffer
 	glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, 0);
 	glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, framebuffer);
 
-	/* clear the framebuffer */
+	// clear the framebuffer
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	/* copy current off-screen contents to the framebuffer */
+	// copy current off-screen contents to the framebuffer
 	glBlitFramebufferEXT(0, 0, framebuffer_width, framebuffer_height, 0, 0, framebuffer_width, framebuffer_height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
@@ -355,7 +355,7 @@ static void *jaggl_proc_addr(const char *name) {
 }
 
 - (void)releaseCGLPixelFormat:(CGLPixelFormatObj)pix {
-	/* empty */
+	// empty
 }
 
 - (CGLContextObj)copyCGLContextForPixelFormat:(CGLPixelFormatObj)pix {
@@ -428,7 +428,7 @@ static PFNWGLCHOOSEPIXELFORMATARBPROC jaggl_wglChoosePixelFormatARB;
 static PFNWGLGETEXTENSIONSSTRINGEXTPROC jaggl_wglGetExtensionsStringEXT;
 static PFNWGLSWAPINTERVALEXTPROC jaggl_wglSwapIntervalEXT;
 #elif defined(__APPLE__) && defined(__MACH__)
-/* CGL doesn't have extensions */
+// CGL doesn't have extensions
 #else
 #error Unsupported platform
 #endif
@@ -486,7 +486,7 @@ static void jaggl_init_proc_table(void) {
 	jaggl_wglGetExtensionsStringEXT = (PFNWGLGETEXTENSIONSSTRINGEXTPROC) JAGGL_PROC_ADDR("wglGetExtensionsStringEXT");
 	jaggl_wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC) JAGGL_PROC_ADDR("wglSwapIntervalEXT");
 #elif defined(__APPLE__) && defined(__MACH__)
-	/* CGL doesn't have extensions */
+	// CGL doesn't have extensions
 #else
 #error Unsupported platform
 #endif
@@ -842,7 +842,7 @@ JNIEXPORT jstring JNICALL Java_jaggl_context_getExtensionsString(JNIEnv *env, jc
 		extensions_str = "";
 	}
 #elif defined(__APPLE__) && defined(__MACH__)
-	/* CGL doesn't have extensions */
+	// CGL doesn't have extensions
 	extensions_str = "";
 #else
 #error Unsupported platform
@@ -927,11 +927,11 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 			alpha_bits,
 			GLX_DEPTH_SIZE,
 			24,
-			None, /* for GLX_DOUBLEBUFFER */
-			None, /* for GLX_SAMPLE_BUFFERS */
-			None, /* for True */
-			None, /* for GLX_SAMPLES */
-			None, /* for num_samples */
+			None, // for GLX_DOUBLEBUFFER
+			None, // for GLX_SAMPLE_BUFFERS
+			None, // for True
+			None, // for GLX_SAMPLES
+			None, // for num_samples
 			None
 		};
 
@@ -1007,12 +1007,12 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 				alpha_bits,
 				WGL_DEPTH_BITS_ARB,
 				24,
-				0, /* for WGL_DOUBLE_BUFFER_ARB */
-				0, /* for GL_TRUE */
-				0, /* for WGL_SAMPLE_BUFFERS_ARB */
-				0, /* for GL_TRUE */
-				0, /* for WGL_SAMPLES_ARB */
-				0, /* for num_samples */
+				0, // for WGL_DOUBLE_BUFFER_ARB
+				0, // for GL_TRUE
+				0, // for WGL_SAMPLE_BUFFERS_ARB
+				0, // for GL_TRUE
+				0, // for WGL_SAMPLES_ARB
+				0, // for num_samples
 				0
 			};
 
@@ -1107,10 +1107,10 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 			kCGLPFADepthSize,
 			24,
 			kCGLPFAMinimumPolicy,
-			(CGLPixelFormatAttribute) NULL, /* for kCGLPFADoubleBuffer */
-			(CGLPixelFormatAttribute) NULL, /* for kCGLPFAMultisample */
-			(CGLPixelFormatAttribute) NULL, /* for kCGLPFASamples */
-			(CGLPixelFormatAttribute) NULL, /* for num_samples */
+			(CGLPixelFormatAttribute) NULL, // for kCGLPFADoubleBuffer
+			(CGLPixelFormatAttribute) NULL, // for kCGLPFAMultisample
+			(CGLPixelFormatAttribute) NULL, // for kCGLPFASamples
+			(CGLPixelFormatAttribute) NULL, // for num_samples
 			(CGLPixelFormatAttribute) NULL
 		};
 
@@ -1160,8 +1160,8 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 				 * but only because windows don't have left borders and there is
 				 * nothing above the Canvas in the Frame.
 				 */
-				jint x = dsi->bounds.x; /* should be dsi->bounds.x - insets.left */
-				jint y = 0; /* should be dsi->bounds.y - insets.top */
+				jint x = dsi->bounds.x; // should be dsi->bounds.x - insets.left
+				jint y = 0; // should be dsi->bounds.y - insets.top
 				jaggl_layer.frame = CGRectMake(x, platform_info.windowLayer.bounds.size.height - y - dsi->bounds.height, dsi->bounds.width, dsi->bounds.height);
 				[jaggl_layer setNeedsDisplay];
 			});
