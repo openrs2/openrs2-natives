@@ -117,31 +117,14 @@ deploy the release:
 
 ## License
 
-All code and data is licensed under version 3.0 (and only version 3.0) of the
-[GNU Lesser General Public License][lgpl]. The full terms are available in the
-`COPYING.LESSER` file.
-
-## Copyright
-
-Copyright (c) 2019-2020 OpenRS2 Authors
-
-OpenRS2 Natives is free software: you can redistribute it and/or modify it
-under the terms of the GNU Lesser General Public License as published by the
-Free Software Foundation, either version 3 of the License, or (at your option)
-any later version.
-
-OpenRS2 Natives is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
-details.
-
-You should have received a copy of the GNU Lesser General Public License along
-with OpenRS2 Natives. If not, see <https://www.gnu.org/licenses/>.
+OpenRS2 is available under the terms of the [ISC license][isc], which is
+similar to the 2-clause BSD license. The full copyright notice and terms are
+available in the `LICENSE` file.
 
 [gcc]: https://gcc.gnu.org/
 [homebrew]: https://brew.sh/
+[isc]: https://opensource.org/licenses/ISC
 [jdk]: https://jdk.java.net/
-[lgpl]: https://www.gnu.org/licenses/lgpl-3.0.html
 [mac-legacy-java]: https://support.apple.com/kb/DL1572
 [maven]: https://maven.apache.org/
 [mesa]: https://www.mesa3d.org/
