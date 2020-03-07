@@ -104,11 +104,11 @@ performed manually for each operating system and architecture.
 
 First prepare the release to create the tag:
 
-    mvn -Dmac,unix,windows release:prepare
+    mvn -Pmac,unix,windows release:prepare
 
 The temporary release files may then be deleted:
 
-    mvn -Dmac,unix,windows release:clean
+    mvn -Pmac,unix,windows release:clean
 
 On each operating system and architecture, checkout the new tag and manually
 deploy the release:
