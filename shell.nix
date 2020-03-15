@@ -6,7 +6,7 @@
     targetPkgs = pkgs: (
       with pkgs; [
         gcc
-        jdk8
+        jdk11
         libGL.dev
         maven
         xorg.libX11.dev

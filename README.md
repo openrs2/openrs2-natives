@@ -12,7 +12,7 @@ jagmisc native libraries.
 Building OpenRS2 Natives requires the following pieces of software on all
 platforms:
 
-* [Java Development Kit][jdk] (version 8 or later)
+* [Java Development Kit][jdk] (version 11 or later)
 * [Apache Maven][maven] (version 3.3.9 or later)
 
 ### Platform-specific dependencies
