@@ -7,7 +7,7 @@
       with pkgs; [
         gcc
         jdk11
-        libGL.dev
+        libglvnd.dev
         maven
         xorg.libX11.dev
         xorg.libXt.dev
