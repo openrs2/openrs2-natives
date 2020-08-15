@@ -1090,7 +1090,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 
 	result = JNI_TRUE;
 #elif defined(__APPLE__) && defined(__MACH__)
-	if (!dsi->platform_info) {
+	if (!dsi->platformInfo) {
 		goto dsi_free;
 	}
 
