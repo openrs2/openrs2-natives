@@ -1135,12 +1135,64 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 		jaggl_alpha_bits = alpha_bits;
 
 		if (jaggl_calayer) {
+			jclass component_cls = (*env)->FindClass(env, "java/awt/Component");
+			if (!component_cls) {
+				goto pix_free;
+			}
+
+			jmethodID component_parent = (*env)->GetMethodID(env, component_cls, "getParent", "()Ljava/awt/Container;");
+			if (!component_parent) {
+				goto pix_free;
+			}
+
+			jmethodID component_location = (*env)->GetMethodID(env, component_cls, "getLocationOnScreen", "()Ljava/awt/Point;");
+			if (!component_location) {
+				goto pix_free;
+			}
+
+			jclass container_cls = (*env)->FindClass(env, "java/awt/Container");
+			if (!container_cls) {
+				goto pix_free;
+			}
+
+			jmethodID container_insets = (*env)->GetMethodID(env, container_cls, "getInsets", "()Ljava/awt/Insets;");
+			if (!container_insets) {
+				goto pix_free;
+			}
+
+			jclass insets_cls = (*env)->FindClass(env, "java/awt/Insets");
+			if (!insets_cls) {
+				goto pix_free;
+			}
+
+			jfieldID insets_top = (*env)->GetFieldID(env, insets_cls, "top", "I");
+			if (!insets_top) {
+				goto pix_free;
+			}
+
+			jfieldID insets_left = (*env)->GetFieldID(env, insets_cls, "left", "I");
+			if (!insets_left) {
+				goto pix_free;
+			}
+
+			jobject parent = (*env)->CallObjectMethod(env, component, component_parent);
+			if (!parent) {
+				goto pix_free;
+			}
+
+			jobject insets = (*env)->CallObjectMethod(env, parent, container_insets);
+			if (!insets) {
+				goto pix_free;
+			}
+
+			jint top = (*env)->GetIntField(env, insets, insets_top);
+			jint left = (*env)->GetIntField(env, insets, insets_left);
+
 			id<JAWT_SurfaceLayers> platform_info = (id<JAWT_SurfaceLayers>) dsi->platformInfo;
 
 			CGLCreateContext(jaggl_pix, NULL, &jaggl_onscreen_context);
 			if (!jaggl_onscreen_context) {
-				CGLDestroyPixelFormat(jaggl_pix);
-				goto dsi_free;
+				goto pix_free;
 			}
 
 			dispatch_sync(dispatch_get_main_queue(), ^{
@@ -1153,15 +1205,9 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 				jaggl_layer = [[JagGLLayer alloc] init];
 				platform_info.layer = jaggl_layer;
 
-				/*
-				 * XXX(gpe): the DSI bounds include the top/left insets, which we
-				 * need to subtract here. Unfortunately, we can't access them here
-				 * easily. Ignoring the left inset and hard-coding y to zero work,
-				 * but only because windows don't have left borders and there is
-				 * nothing above the Canvas in the Frame.
-				 */
-				jint x = dsi->bounds.x; // should be dsi->bounds.x - insets.left
-				jint y = 0;             // should be dsi->bounds.y - insets.top
+				jint x = dsi->bounds.x - left;
+				jint y = dsi->bounds.y - top;
+
 				jaggl_layer.frame = CGRectMake(x, platform_info.windowLayer.bounds.size.height - y - dsi->bounds.height, dsi->bounds.width, dsi->bounds.height);
 				[jaggl_layer setNeedsDisplay];
 			});
@@ -1178,6 +1224,9 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 
 		result = JNI_TRUE;
 		goto dsi_free;
+
+pix_free:
+		CGLDestroyPixelFormat(jaggl_pix);
 	}
 #else
 #error Unsupported platform
