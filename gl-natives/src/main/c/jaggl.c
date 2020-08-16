@@ -343,10 +343,10 @@ static void *jaggl_proc_addr(const char *name) {
 		return;
 	}
 
-	[lock lock];
-
 	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	[lock lock];
 
 	if (framebuffer) {
 		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, framebuffer);
