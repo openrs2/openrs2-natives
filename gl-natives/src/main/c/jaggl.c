@@ -339,7 +339,9 @@ static void *jaggl_proc_addr(const char *name) {
              pixelFormat:(CGLPixelFormatObj)pixelFormat
             forLayerTime:(CFTimeInterval)layerTime
              displayTime:(const CVTimeStamp *)displayTime {
-	CGLSetCurrentContext(context);
+	if (CGLSetCurrentContext(context) != kCGLNoError) {
+		return;
+	}
 
 	[lock lock];
 
