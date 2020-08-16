@@ -1220,10 +1220,10 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 
 		result = JNI_TRUE;
 		goto dsi_free;
+	}
 
 pix_free:
-		CGLDestroyPixelFormat(jaggl_pix);
-	}
+	CGLDestroyPixelFormat(jaggl_pix);
 #else
 #error Unsupported platform
 #endif
