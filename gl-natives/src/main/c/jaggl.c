@@ -1146,11 +1146,6 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 				goto pix_free;
 			}
 
-			jmethodID component_location = (*env)->GetMethodID(env, component_cls, "getLocationOnScreen", "()Ljava/awt/Point;");
-			if (!component_location) {
-				goto pix_free;
-			}
-
 			jclass container_cls = (*env)->FindClass(env, "java/awt/Container");
 			if (!container_cls) {
 				goto pix_free;
