@@ -227,7 +227,6 @@ static void *jaggl_proc_addr(const char *name) {
 		self.asynchronous = NO;
 		self.opaque = YES;
 		self.needsDisplayOnBoundsChange = YES;
-		self.autoresizingMask = kCALayerWidthSizable | kCALayerHeightSizable;
 	}
 	lock = [[NSLock alloc] init];
 	return self;
