@@ -50,7 +50,8 @@ command-line tools.
 
 The easiest way to install the Java Development Kit and Apache Maven is with the
 [Homebrew][homebrew] package manager. After installing Homebrew, run
-`brew cask install java` and `brew install maven`.
+`brew tap AdoptOpenJDK/openjdk && brew cask install adoptopenjdk11` and
+`brew install maven`.
 
 ##### Cross-compiling
 
