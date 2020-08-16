@@ -233,6 +233,14 @@ static void *jaggl_proc_addr(const char *name) {
 }
 
 - (void)dealloc {
+	if (framebuffer && CGLSetCurrentContext(jaggl_onscreen_context) == kCGLNoError) {
+		glDeleteRenderbuffersEXT(1, &renderbuffer_depth);
+		glDeleteRenderbuffersEXT(1, &renderbuffer_color);
+		glDeleteFramebuffersEXT(1, &framebuffer);
+
+		CGLSetCurrentContext(NULL);
+	}
+
 	[lock release];
 	[super dealloc];
 }
@@ -362,15 +370,7 @@ static void *jaggl_proc_addr(const char *name) {
 }
 
 - (void)releaseCGLContext:(CGLContextObj)context {
-	/*
-	 * Ideally we'd delete the framebuffer/renderbuffers here, if they exist.
-	 * However, releaseCGLContext sometimes ends up being called after we
-	 * destroy the jaggl_onscreen_context, so attempting to call any gl*
-	 * functions here causes a segfault.
-	 *
-	 * Hopefully deleting the context will free up the
-	 * framebuffer/renderbuffers implicitly.
-	 */
+	// empty
 }
 @end
 #endif
