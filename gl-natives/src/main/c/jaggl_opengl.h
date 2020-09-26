@@ -1151,6 +1151,14 @@ JNIEXPORT void JNICALL Java_jaggl_opengl_glDrawArrays
 JNIEXPORT void JNICALL Java_jaggl_opengl_glLineWidth
   (JNIEnv *, jobject, jfloat);
 
+/*
+ * Class:     jaggl_opengl
+ * Method:    glPixelZoom
+ * Signature: (FF)V
+ */
+JNIEXPORT void JNICALL Java_jaggl_opengl_glPixelZoom
+  (JNIEnv *, jobject, jfloat, jfloat);
+
 #ifdef __cplusplus
 }
 #endif

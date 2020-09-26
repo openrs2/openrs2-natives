@@ -2662,3 +2662,11 @@ JNIEXPORT void JNICALL Java_jaggl_opengl_glViewport(JNIEnv *env, jobject obj, ji
 
 	JAGGL_UNLOCK(env);
 }
+
+JNIEXPORT void JNICALL Java_jaggl_opengl_glPixelZoom(JNIEnv *env, jobject obj, jfloat xfactor, jfloat yfactor) {
+	JAGGL_LOCK(env);
+
+	glPixelZoom((GLfloat) xfactor, (GLfloat) yfactor);
+
+	JAGGL_UNLOCK(env);
+}
