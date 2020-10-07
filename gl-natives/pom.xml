@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>dev.openrs2</groupId>
+    <groupId>org.openrs2</groupId>
     <artifactId>openrs2-natives</artifactId>
     <version>1.0.1-SNAPSHOT</version>
   </parent>
