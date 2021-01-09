@@ -35,13 +35,16 @@
               <target>
                 <pathconvert property="openrs2.jawtDirectory">
                   <first>
-                    <fileset dir="${nar.javaHome}">
+                    <multirootfileset>
+                      <basedir file="${nar.javaHome}" />
                       <include name="lib/**/jawt.lib" />
                       <include name="lib/**/libjawt.dylib" />
                       <include name="lib/**/libjawt.so" />
+
                       <!-- legacy Java on macOS -->
-                      <include name="../Libraries/libjawt.dylib" />
-                    </fileset>
+                      <basedir file="${nar.javaHome}/.." />
+                      <include name="Libraries/libjawt.dylib" />
+                    </multirootfileset>
                   </first>
                   <regexpmapper from="(.*)/" to="\1" handledirsep="true" />
                 </pathconvert>
