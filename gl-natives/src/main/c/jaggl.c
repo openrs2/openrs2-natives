@@ -2,13 +2,23 @@
 #include "jaggl_opengl.h"
 
 #if defined(__unix__)
-#include <GL/glx.h>
+#define JAGGL_GLX
 #elif defined(_WIN32)
+#define JAGGL_WGL
+#elif defined(__APPLE__) && defined(__MACH__)
+#define JAGGL_CGL
+#else
+#error Unsupported platform
+#endif
+
+#if defined(JAGGL_GLX)
+#include <GL/glx.h>
+#elif defined(JAGGL_WGL)
 #include <windows.h>
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <GL/wglext.h>
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 #include <AppKit/NSOpenGL.h>
 #include <AppKit/NSView.h>
 #include <AppKit/NSWindow.h>
@@ -26,7 +36,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(JAGGL_CGL)
 #define _JAGGL_GET(env) \
 	JAWT awt = { .version = JAWT_VERSION_1_4 }; \
 	bool awt_valid = JAWT_GetAWT(env, &awt); \
@@ -85,7 +95,7 @@
 #define JAGGL_RELEASE_STRING(env, str) \
 	(*env)->ReleaseStringUTFChars(env, str, str ## _str)
 
-#if defined(__unix__)
+#if defined(JAGGL_GLX)
 #define PFNGLCLIENTACTIVETEXTUREPROC PFNGLCLIENTACTIVETEXTUREARBPROC
 #define PFNGLMULTITEXCOORD2FPROC PFNGLMULTITEXCOORD2FARBPROC
 #define PFNGLMULTITEXCOORD2IPROC PFNGLMULTITEXCOORD2IARBPROC
@@ -97,7 +107,7 @@
 #define JAGGL_UNLOCK(env) _JAGGL_UNLOCK(env)
 
 #define JAGGL_PROC_ADDR(name) glXGetProcAddressARB((const GLubyte *) name)
-#elif defined(_WIN32)
+#elif defined(JAGGL_WGL)
 #define JAGGL_FORCE_LOCK(env) _JAGGL_GET(env)
 #define JAGGL_FORCE_UNLOCK(env)
 
@@ -105,7 +115,7 @@
 #define JAGGL_UNLOCK(env)
 
 #define JAGGL_PROC_ADDR(name) wglGetProcAddress(name)
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 #define JAGGL_FORCE_LOCK(env) _JAGGL_GET(env)
 #define JAGGL_FORCE_UNLOCK(env)
 
@@ -117,19 +127,19 @@
 #error Unsupported platform
 #endif
 
-#if defined(__unix__)
+#if defined(JAGGL_GLX)
 static Display *jaggl_display;
 static XVisualInfo *jaggl_visual_info;
 static VisualID jaggl_visual_id;
 static GLXContext jaggl_context;
 static GLXDrawable jaggl_drawable;
 static bool jaggl_double_buffered;
-#elif defined(_WIN32)
+#elif defined(JAGGL_WGL)
 static HINSTANCE jaggl_instance;
 static HWND jaggl_window;
 static HDC jaggl_device;
 static HGLRC jaggl_context;
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 // copy of JAWT_MacOSXDrawingSurfaceInfo from Java 6's jawt_md.h
 struct jaggl_legacy_dsi {
 	NSView *view;
@@ -160,7 +170,7 @@ static bool jaggl_double_buffered;
 #endif
 static int jaggl_alpha_bits;
 
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(JAGGL_CGL)
 typedef void (*PFNGLACTIVETEXTUREPROC)(GLenum texture);
 typedef void (*PFNGLACTIVETEXTUREARBPROC)(GLenum texture);
 typedef void (*PFNGLATTACHOBJECTARBPROC)(GLhandleARB containerObj, GLhandleARB obj);
@@ -422,13 +432,13 @@ static PFNGLTEXIMAGE3DPROC jaggl_glTexImage3D;
 static PFNGLUNIFORM1IARBPROC jaggl_glUniform1iARB;
 static PFNGLUNIFORM3FARBPROC jaggl_glUniform3fARB;
 static PFNGLUSEPROGRAMOBJECTARBPROC jaggl_glUseProgramObjectARB;
-#if defined(__unix__)
+#if defined(JAGGL_GLX)
 static PFNGLXSWAPINTERVALSGIPROC jaggl_glXSwapIntervalSGI;
-#elif defined(_WIN32)
+#elif defined(JAGGL_WGL)
 static PFNWGLCHOOSEPIXELFORMATARBPROC jaggl_wglChoosePixelFormatARB;
 static PFNWGLGETEXTENSIONSSTRINGEXTPROC jaggl_wglGetExtensionsStringEXT;
 static PFNWGLSWAPINTERVALEXTPROC jaggl_wglSwapIntervalEXT;
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 // CGL doesn't have extensions
 #else
 #error Unsupported platform
@@ -480,20 +490,20 @@ static void jaggl_init_proc_table(void) {
 	jaggl_glUniform1iARB = (PFNGLUNIFORM1IARBPROC) JAGGL_PROC_ADDR("glUniform1iARB");
 	jaggl_glUniform3fARB = (PFNGLUNIFORM3FARBPROC) JAGGL_PROC_ADDR("glUniform3fARB");
 	jaggl_glUseProgramObjectARB = (PFNGLUSEPROGRAMOBJECTARBPROC) JAGGL_PROC_ADDR("glUseProgramObjectARB");
-#if defined(__unix__)
+#if defined(JAGGL_GLX)
 	jaggl_glXSwapIntervalSGI = (PFNGLXSWAPINTERVALSGIPROC) JAGGL_PROC_ADDR("glXSwapIntervalSGI");
-#elif defined(_WIN32)
+#elif defined(JAGGL_WGL)
 	jaggl_wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC) JAGGL_PROC_ADDR("wglChoosePixelFormatARB");
 	jaggl_wglGetExtensionsStringEXT = (PFNWGLGETEXTENSIONSSTRINGEXTPROC) JAGGL_PROC_ADDR("wglGetExtensionsStringEXT");
 	jaggl_wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC) JAGGL_PROC_ADDR("wglSwapIntervalEXT");
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 	// CGL doesn't have extensions
 #else
 #error Unsupported platform
 #endif
 }
 
-#if defined(_WIN32)
+#if defined(JAGGL_WGL)
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
 	if (fdwReason == DLL_PROCESS_ATTACH) {
 		jaggl_instance = hinstDLL;
@@ -581,7 +591,7 @@ destroy_class:
 JNIEXPORT jboolean JNICALL Java_jaggl_context_createContext(JNIEnv *env, jclass cls) {
 	JAGGL_LOCK(env);
 
-#if defined(__unix__)
+#if defined(JAGGL_GLX)
 	GLXContext current = glXGetCurrentContext();
 	if (current) {
 		glXMakeCurrent(jaggl_display, None, NULL);
@@ -593,7 +603,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_createContext(JNIEnv *env, jclass 
 	}
 
 	jaggl_context = glXCreateContext(jaggl_display, jaggl_visual_info, NULL, True);
-#elif defined(_WIN32)
+#elif defined(JAGGL_WGL)
 	HGLRC current = wglGetCurrentContext();
 	if (current) {
 		wglMakeCurrent(jaggl_device, NULL);
@@ -605,7 +615,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_createContext(JNIEnv *env, jclass 
 	}
 
 	jaggl_context = wglCreateContext(jaggl_device);
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 	CGLContextObj current = CGLGetCurrentContext();
 	if (current) {
 		CGLSetCurrentContext(NULL);
@@ -636,17 +646,17 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_releaseContext(JNIEnv *env, jclass
 
 	jboolean result = JNI_TRUE;
 
-#if defined(__unix__)
+#if defined(JAGGL_GLX)
 	GLXContext current = glXGetCurrentContext();
 	if (current) {
 		result = (jboolean) glXMakeCurrent(jaggl_display, None, NULL);
 	}
-#elif defined(_WIN32)
+#elif defined(JAGGL_WGL)
 	HGLRC current = wglGetCurrentContext();
 	if (current) {
 		result = (jboolean) wglMakeCurrent(jaggl_device, NULL);
 	}
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 	CGLContextObj current = CGLGetCurrentContext();
 	if (current) {
 		result = (jboolean) (CGLSetCurrentContext(NULL) == kCGLNoError);
@@ -662,7 +672,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_releaseContext(JNIEnv *env, jclass
 JNIEXPORT jboolean JNICALL Java_jaggl_context_destroy(JNIEnv *env, jclass cls) {
 	JAGGL_LOCK(env);
 
-#if defined(__unix__)
+#if defined(JAGGL_GLX)
 	GLXContext current = glXGetCurrentContext();
 	if (current) {
 		glXMakeCurrent(jaggl_display, None, NULL);
@@ -679,7 +689,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_destroy(JNIEnv *env, jclass cls) {
 	}
 
 	jaggl_display = None;
-#elif defined(_WIN32)
+#elif defined(JAGGL_WGL)
 	HGLRC current = wglGetCurrentContext();
 	if (current) {
 		wglMakeCurrent(jaggl_device, NULL);
@@ -696,7 +706,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_destroy(JNIEnv *env, jclass cls) {
 	}
 
 	jaggl_window = NULL;
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 	CGLContextObj current = CGLGetCurrentContext();
 	if (current) {
 		CGLSetCurrentContext(NULL);
@@ -762,15 +772,15 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_swapBuffers(JNIEnv *env, jclass cl
 
 	jboolean result = JNI_TRUE;
 
-#if defined(__unix__)
+#if defined(JAGGL_GLX)
 	if (jaggl_double_buffered) {
 		glXSwapBuffers(jaggl_display, jaggl_drawable);
 	} else {
 		glFlush();
 	}
-#elif defined(_WIN32)
+#elif defined(JAGGL_WGL)
 	result = (jboolean) SwapBuffers(jaggl_device);
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 	if (jaggl_calayer) {
 		[jaggl_layer blit];
 	}
@@ -794,11 +804,11 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_swapBuffers(JNIEnv *env, jclass cl
 }
 
 JNIEXPORT jint JNICALL Java_jaggl_context_getLastError(JNIEnv *env, jclass cls) {
-#if defined(__unix__)
+#if defined(JAGGL_GLX)
 	return 0;
-#elif defined(_WIN32)
+#elif defined(JAGGL_WGL)
 	return (jint) GetLastError();
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 	return 0;
 #else
 #error Unsupported platform
@@ -808,15 +818,15 @@ JNIEXPORT jint JNICALL Java_jaggl_context_getLastError(JNIEnv *env, jclass cls) 
 JNIEXPORT void JNICALL Java_jaggl_context_setSwapInterval(JNIEnv *env, jclass cls, jint interval) {
 	JAGGL_LOCK(env);
 
-#if defined(__unix__)
+#if defined(JAGGL_GLX)
 	if (jaggl_glXSwapIntervalSGI) {
 		jaggl_glXSwapIntervalSGI((int) interval);
 	}
-#elif defined(_WIN32)
+#elif defined(JAGGL_WGL)
 	if (jaggl_wglSwapIntervalEXT) {
 		jaggl_wglSwapIntervalEXT((int) interval);
 	}
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 	GLint param = (GLint) interval;
 	CGLSetParameter(jaggl_context, kCGLCPSwapInterval, &param);
 	if (jaggl_calayer) {
@@ -834,15 +844,15 @@ JNIEXPORT jstring JNICALL Java_jaggl_context_getExtensionsString(JNIEnv *env, jc
 
 	const char *extensions_str;
 
-#if defined(__unix__)
+#if defined(JAGGL_GLX)
 	extensions_str = glXQueryExtensionsString(jaggl_display, jaggl_visual_info->screen);
-#elif defined(_WIN32)
+#elif defined(JAGGL_WGL)
 	if (jaggl_wglGetExtensionsStringEXT) {
 		extensions_str = jaggl_wglGetExtensionsStringEXT();
 	} else {
 		extensions_str = "";
 	}
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 	// CGL doesn't have extensions
 	extensions_str = "";
 #else
@@ -881,7 +891,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 		goto ds_unlock;
 	}
 
-#if defined(__unix__)
+#if defined(JAGGL_GLX)
 	JAWT_X11DrawingSurfaceInfo *platform_info = (JAWT_X11DrawingSurfaceInfo *) dsi->platformInfo;
 	if (!platform_info) {
 		goto dsi_free;
@@ -959,7 +969,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 		result = JNI_TRUE;
 		goto dsi_free;
 	}
-#elif defined(_WIN32)
+#elif defined(JAGGL_WGL)
 	JAWT_Win32DrawingSurfaceInfo *platform_info = (JAWT_Win32DrawingSurfaceInfo *) dsi->platformInfo;
 	if (!platform_info) {
 		goto dsi_free;
@@ -1090,7 +1100,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 	jaggl_alpha_bits = pfd.cAlphaBits;
 
 	result = JNI_TRUE;
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 	if (!dsi->platformInfo) {
 		goto dsi_free;
 	}
@@ -1248,7 +1258,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_makeCurrent1(JNIEnv *env, jclass c
 		goto done;
 	}
 
-#if defined(__unix__)
+#if defined(JAGGL_GLX)
 	GLXContext current = glXGetCurrentContext();
 	if (jaggl_context == current) {
 		result = JNI_TRUE;
@@ -1260,7 +1270,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_makeCurrent1(JNIEnv *env, jclass c
 	if (!glXMakeCurrent(jaggl_display, jaggl_drawable, jaggl_context)) {
 		goto done;
 	}
-#elif defined(_WIN32)
+#elif defined(JAGGL_WGL)
 	HGLRC current = wglGetCurrentContext();
 	if (jaggl_context == current) {
 		result = JNI_TRUE;
@@ -1272,7 +1282,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_makeCurrent1(JNIEnv *env, jclass c
 	if (!wglMakeCurrent(jaggl_device, jaggl_context)) {
 		goto done;
 	}
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif defined(JAGGL_CGL)
 	CGLContextObj current = CGLGetCurrentContext();
 	if (jaggl_context == current) {
 		result = JNI_TRUE;
