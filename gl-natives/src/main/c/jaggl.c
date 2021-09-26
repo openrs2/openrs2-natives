@@ -730,6 +730,7 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_destroy(JNIEnv *env, jclass cls) {
 		jaggl_surface = EGL_NO_SURFACE;
 	}
 
+	eglTerminate(jaggl_display);
 	jaggl_display = EGL_NO_DISPLAY;
 #elif defined(JAGGL_GLX)
 	GLXContext current = glXGetCurrentContext();
