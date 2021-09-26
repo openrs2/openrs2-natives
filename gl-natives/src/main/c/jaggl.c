@@ -11,7 +11,10 @@
 #error Unsupported platform
 #endif
 
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+#include <EGL/egl.h>
+#include <GL/gl.h>
+#elif defined(JAGGL_GLX)
 #include <GL/glx.h>
 #elif defined(JAGGL_WGL)
 #include <windows.h>
@@ -95,7 +98,19 @@
 #define JAGGL_RELEASE_STRING(env, str) \
 	(*env)->ReleaseStringUTFChars(env, str, str ## _str)
 
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+#define PFNGLCLIENTACTIVETEXTUREPROC PFNGLCLIENTACTIVETEXTUREARBPROC
+#define PFNGLMULTITEXCOORD2FPROC PFNGLMULTITEXCOORD2FARBPROC
+#define PFNGLMULTITEXCOORD2IPROC PFNGLMULTITEXCOORD2IARBPROC
+
+#define JAGGL_FORCE_LOCK(env) _JAGGL_GET(env)
+#define JAGGL_FORCE_UNLOCK(env)
+
+#define JAGGL_LOCK(env)
+#define JAGGL_UNLOCK(env)
+
+#define JAGGL_PROC_ADDR(name) eglGetProcAddress(name)
+#elif defined(JAGGL_GLX)
 #define PFNGLCLIENTACTIVETEXTUREPROC PFNGLCLIENTACTIVETEXTUREARBPROC
 #define PFNGLMULTITEXCOORD2FPROC PFNGLMULTITEXCOORD2FARBPROC
 #define PFNGLMULTITEXCOORD2IPROC PFNGLMULTITEXCOORD2IARBPROC
@@ -127,7 +142,13 @@
 #error Unsupported platform
 #endif
 
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+static EGLDisplay jaggl_display = EGL_NO_DISPLAY;
+static EGLSurface jaggl_surface = EGL_NO_SURFACE;
+static EGLContext jaggl_context = EGL_NO_CONTEXT;
+static EGLConfig jaggl_config;
+static bool jaggl_double_buffered;
+#elif defined(JAGGL_GLX)
 static Display *jaggl_display;
 static XVisualInfo *jaggl_visual_info;
 static VisualID jaggl_visual_id;
@@ -432,7 +453,9 @@ static PFNGLTEXIMAGE3DPROC jaggl_glTexImage3D;
 static PFNGLUNIFORM1IARBPROC jaggl_glUniform1iARB;
 static PFNGLUNIFORM3FARBPROC jaggl_glUniform3fARB;
 static PFNGLUSEPROGRAMOBJECTARBPROC jaggl_glUseProgramObjectARB;
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+// we don't require any EGL extensions
+#elif defined(JAGGL_GLX)
 static PFNGLXSWAPINTERVALSGIPROC jaggl_glXSwapIntervalSGI;
 #elif defined(JAGGL_WGL)
 static PFNWGLCHOOSEPIXELFORMATARBPROC jaggl_wglChoosePixelFormatARB;
@@ -490,7 +513,9 @@ static void jaggl_init_proc_table(void) {
 	jaggl_glUniform1iARB = (PFNGLUNIFORM1IARBPROC) JAGGL_PROC_ADDR("glUniform1iARB");
 	jaggl_glUniform3fARB = (PFNGLUNIFORM3FARBPROC) JAGGL_PROC_ADDR("glUniform3fARB");
 	jaggl_glUseProgramObjectARB = (PFNGLUSEPROGRAMOBJECTARBPROC) JAGGL_PROC_ADDR("glUseProgramObjectARB");
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+	// we don't require any EGL extensions
+#elif defined(JAGGL_GLX)
 	jaggl_glXSwapIntervalSGI = (PFNGLXSWAPINTERVALSGIPROC) JAGGL_PROC_ADDR("glXSwapIntervalSGI");
 #elif defined(JAGGL_WGL)
 	jaggl_wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC) JAGGL_PROC_ADDR("wglChoosePixelFormatARB");
@@ -591,7 +616,19 @@ destroy_class:
 JNIEXPORT jboolean JNICALL Java_jaggl_context_createContext(JNIEnv *env, jclass cls) {
 	JAGGL_LOCK(env);
 
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+	EGLContext current = eglGetCurrentContext();
+	if (current) {
+		eglMakeCurrent(jaggl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+	}
+
+	if (jaggl_context) {
+		eglDestroyContext(jaggl_display, jaggl_context);
+		jaggl_context = NULL;
+	}
+
+	jaggl_context = eglCreateContext(jaggl_display, jaggl_config, EGL_NO_CONTEXT, NULL);
+#elif defined(JAGGL_GLX)
 	GLXContext current = glXGetCurrentContext();
 	if (current) {
 		glXMakeCurrent(jaggl_display, None, NULL);
@@ -646,7 +683,12 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_releaseContext(JNIEnv *env, jclass
 
 	jboolean result = JNI_TRUE;
 
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+	EGLContext current = eglGetCurrentContext();
+	if (current) {
+		result = (jboolean) eglMakeCurrent(jaggl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+	}
+#elif defined(JAGGL_GLX)
 	GLXContext current = glXGetCurrentContext();
 	if (current) {
 		result = (jboolean) glXMakeCurrent(jaggl_display, None, NULL);
@@ -672,7 +714,24 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_releaseContext(JNIEnv *env, jclass
 JNIEXPORT jboolean JNICALL Java_jaggl_context_destroy(JNIEnv *env, jclass cls) {
 	JAGGL_LOCK(env);
 
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+	EGLContext current = eglGetCurrentContext();
+	if (current) {
+		eglMakeCurrent(jaggl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+	}
+
+	if (jaggl_context) {
+		eglDestroyContext(jaggl_display, jaggl_context);
+		jaggl_context = EGL_NO_CONTEXT;
+	}
+
+	if (jaggl_surface) {
+		eglDestroySurface(jaggl_display, jaggl_surface);
+		jaggl_surface = EGL_NO_SURFACE;
+	}
+
+	jaggl_display = EGL_NO_DISPLAY;
+#elif defined(JAGGL_GLX)
 	GLXContext current = glXGetCurrentContext();
 	if (current) {
 		glXMakeCurrent(jaggl_display, None, NULL);
@@ -772,7 +831,13 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_swapBuffers(JNIEnv *env, jclass cl
 
 	jboolean result = JNI_TRUE;
 
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+	if (jaggl_double_buffered) {
+		result = (jboolean) eglSwapBuffers(jaggl_display, jaggl_surface);
+	} else {
+		glFlush();
+	}
+#elif defined(JAGGL_GLX)
 	if (jaggl_double_buffered) {
 		glXSwapBuffers(jaggl_display, jaggl_drawable);
 	} else {
@@ -804,7 +869,9 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_swapBuffers(JNIEnv *env, jclass cl
 }
 
 JNIEXPORT jint JNICALL Java_jaggl_context_getLastError(JNIEnv *env, jclass cls) {
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+	return (jint) eglGetError();
+#elif defined(JAGGL_GLX)
 	return 0;
 #elif defined(JAGGL_WGL)
 	return (jint) GetLastError();
@@ -818,7 +885,9 @@ JNIEXPORT jint JNICALL Java_jaggl_context_getLastError(JNIEnv *env, jclass cls) 
 JNIEXPORT void JNICALL Java_jaggl_context_setSwapInterval(JNIEnv *env, jclass cls, jint interval) {
 	JAGGL_LOCK(env);
 
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+	eglSwapInterval(jaggl_display, (EGLint) interval);
+#elif defined(JAGGL_GLX)
 	if (jaggl_glXSwapIntervalSGI) {
 		jaggl_glXSwapIntervalSGI((int) interval);
 	}
@@ -844,7 +913,10 @@ JNIEXPORT jstring JNICALL Java_jaggl_context_getExtensionsString(JNIEnv *env, jc
 
 	const char *extensions_str;
 
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+	// we don't require any EGL extensions
+	extensions_str = "";
+#elif defined(JAGGL_GLX)
 	extensions_str = glXQueryExtensionsString(jaggl_display, jaggl_visual_info->screen);
 #elif defined(JAGGL_WGL)
 	if (jaggl_wglGetExtensionsStringEXT) {
@@ -891,7 +963,71 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_choosePixelFormat1(JNIEnv *env, jc
 		goto ds_unlock;
 	}
 
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+	if (!eglBindAPI(EGL_OPENGL_API)) {
+		goto dsi_free;
+	}
+
+	JAWT_X11DrawingSurfaceInfo *platform_info = (JAWT_X11DrawingSurfaceInfo *) dsi->platformInfo;
+	if (!platform_info) {
+		goto dsi_free;
+	}
+
+	jaggl_display = eglGetDisplay(platform_info->display);
+	if (!jaggl_display) {
+		goto dsi_free;
+	}
+
+	if (!eglInitialize(jaggl_display, NULL, NULL)) {
+		goto dsi_free;
+	}
+
+	EGLint attribs[] = {
+		EGL_COLOR_BUFFER_TYPE,
+		EGL_RGB_BUFFER,
+		EGL_RED_SIZE,
+		8,
+		EGL_GREEN_SIZE,
+		8,
+		EGL_BLUE_SIZE,
+		8,
+		EGL_ALPHA_SIZE,
+		alpha_bits,
+		EGL_DEPTH_SIZE,
+		24,
+		EGL_RENDERABLE_TYPE,
+		EGL_OPENGL_BIT,
+		EGL_SURFACE_TYPE,
+		EGL_WINDOW_BIT,
+		EGL_NONE, // for EGL_SAMPLE_BUFFERS
+		EGL_NONE, // for 1
+		EGL_NONE, // for EGL_SAMPLES
+		EGL_NONE, // for num_samples
+		EGL_NONE
+	};
+
+	int i = 16;
+	if (num_samples) {
+		attribs[i++] = EGL_SAMPLE_BUFFERS;
+		attribs[i++] = 1;
+		attribs[i++] = EGL_SAMPLES;
+		attribs[i++] = num_samples;
+	}
+
+	EGLint num_config;
+	if (!eglChooseConfig(jaggl_display, attribs, &jaggl_config, 1, &num_config) || num_config != 1) {
+		goto dsi_free;
+	}
+
+	jaggl_surface = eglCreateWindowSurface(jaggl_display, jaggl_config, platform_info->drawable, NULL);
+	if (!jaggl_surface) {
+		goto dsi_free;
+	}
+
+	jaggl_alpha_bits = alpha_bits;
+
+	result = JNI_TRUE;
+#elif defined(JAGGL_GLX)
 	JAWT_X11DrawingSurfaceInfo *platform_info = (JAWT_X11DrawingSurfaceInfo *) dsi->platformInfo;
 	if (!platform_info) {
 		goto dsi_free;
@@ -1258,7 +1394,26 @@ JNIEXPORT jboolean JNICALL Java_jaggl_context_makeCurrent1(JNIEnv *env, jclass c
 		goto done;
 	}
 
-#if defined(JAGGL_GLX)
+#if defined(JAGGL_EGL)
+	EGLContext current = eglGetCurrentContext();
+	if (jaggl_context == current) {
+		result = JNI_TRUE;
+		goto done;
+	}
+
+	eglMakeCurrent(jaggl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
+	if (!eglMakeCurrent(jaggl_display, jaggl_surface, jaggl_surface, jaggl_context)) {
+		goto done;
+	}
+
+	EGLint value;
+	if (!eglQueryContext(jaggl_display, jaggl_context, EGL_RENDER_BUFFER, &value)) {
+		goto done;
+	}
+
+	jaggl_double_buffered = value == EGL_BACK_BUFFER;
+#elif defined(JAGGL_GLX)
 	GLXContext current = glXGetCurrentContext();
 	if (jaggl_context == current) {
 		result = JNI_TRUE;
