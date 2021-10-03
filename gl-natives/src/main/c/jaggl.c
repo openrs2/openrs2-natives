@@ -98,45 +98,35 @@
 #define JAGGL_RELEASE_STRING(env, str) \
 	(*env)->ReleaseStringUTFChars(env, str, str ## _str)
 
-#if defined(JAGGL_EGL)
+#if defined(JAGGL_EGL) || defined(JAGGL_GLX)
+// Mesa is missing some non-ARB PFN typedefs
 #define PFNGLCLIENTACTIVETEXTUREPROC PFNGLCLIENTACTIVETEXTUREARBPROC
 #define PFNGLMULTITEXCOORD2FPROC PFNGLMULTITEXCOORD2FARBPROC
 #define PFNGLMULTITEXCOORD2IPROC PFNGLMULTITEXCOORD2IARBPROC
+#endif
 
-#define JAGGL_FORCE_LOCK(env) _JAGGL_GET(env)
-#define JAGGL_FORCE_UNLOCK(env)
-
-#define JAGGL_LOCK(env)
-#define JAGGL_UNLOCK(env)
-
-#define JAGGL_PROC_ADDR(name) eglGetProcAddress(name)
-#elif defined(JAGGL_GLX)
-#define PFNGLCLIENTACTIVETEXTUREPROC PFNGLCLIENTACTIVETEXTUREARBPROC
-#define PFNGLMULTITEXCOORD2FPROC PFNGLMULTITEXCOORD2FARBPROC
-#define PFNGLMULTITEXCOORD2IPROC PFNGLMULTITEXCOORD2IARBPROC
-
+#if defined(JAGGL_GLX)
+// GLX requires locking around every OpenGL call
 #define JAGGL_FORCE_LOCK(env) _JAGGL_GET_AND_LOCK(env)
 #define JAGGL_FORCE_UNLOCK(env) _JAGGL_UNLOCK(env)
 
 #define JAGGL_LOCK(env) _JAGGL_GET_AND_LOCK(env)
 #define JAGGL_UNLOCK(env) _JAGGL_UNLOCK(env)
+#else
+#define JAGGL_FORCE_LOCK(env) _JAGGL_GET(env)
+#define JAGGL_FORCE_UNLOCK(env)
 
+#define JAGGL_LOCK(env)
+#define JAGGL_UNLOCK(env)
+#endif
+
+#if defined(JAGGL_EGL)
+#define JAGGL_PROC_ADDR(name) eglGetProcAddress(name)
+#elif defined(JAGGL_GLX)
 #define JAGGL_PROC_ADDR(name) glXGetProcAddressARB((const GLubyte *) name)
 #elif defined(JAGGL_WGL)
-#define JAGGL_FORCE_LOCK(env) _JAGGL_GET(env)
-#define JAGGL_FORCE_UNLOCK(env)
-
-#define JAGGL_LOCK(env)
-#define JAGGL_UNLOCK(env)
-
 #define JAGGL_PROC_ADDR(name) wglGetProcAddress(name)
 #elif defined(JAGGL_CGL)
-#define JAGGL_FORCE_LOCK(env) _JAGGL_GET(env)
-#define JAGGL_FORCE_UNLOCK(env)
-
-#define JAGGL_LOCK(env)
-#define JAGGL_UNLOCK(env)
-
 #define JAGGL_PROC_ADDR(name) jaggl_proc_addr(name)
 #else
 #error Unsupported platform
