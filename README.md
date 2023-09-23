@@ -1,6 +1,6 @@
 # OpenRS2 Natives
 
-[![Build status badge](https://build.openrs2.org/api/badges/openrs2/openrs2-natives/status.svg)](https://build.openrs2.org/openrs2/openrs2-natives/)
+[![Build status badge][actions-badge]][actions]
 
 ## Introduction
 
@@ -122,6 +122,8 @@ OpenRS2 is available under the terms of the [ISC license][isc], which is
 similar to the 2-clause BSD license. The full copyright notice and terms are
 available in the `LICENSE` file.
 
+[actions-badge]: https://github.com/openrs2/openrs2-natives/actions/workflows/build.yaml/badge.svg?branch=master
+[actions]: https://github.com/openrs2/openrs2-natives/actions
 [gcc]: https://gcc.gnu.org/
 [homebrew]: https://brew.sh/
 [isc]: https://opensource.org/licenses/ISC
