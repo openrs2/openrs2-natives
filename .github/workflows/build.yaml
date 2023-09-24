@@ -4,10 +4,18 @@ jobs:
   build:
     strategy:
       matrix:
+        arch:
+          - x64
+          - x86
         os:
           - macos
           - ubuntu
           - windows
+        exclude:
+          - arch: x86
+            os: macos
+          - arch: x86
+            os: ubuntu
     runs-on: ${{ matrix.os }}-latest
     steps:
       - uses: actions/checkout@v3
@@ -15,6 +23,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 11
+          architecture: ${{ matrix.arch }}
           cache: maven
       - if: matrix.os == 'ubuntu'
         uses: awalsh128/cache-apt-pkgs-action@v1
@@ -22,6 +31,8 @@ jobs:
           packages: libgl1-mesa-dev
       - if: matrix.os == 'windows'
         uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
       - if: matrix.os == 'windows'
         run: echo '${{ env.VCToolsVersion }}' > '${{ env.VCInstallDir }}\Auxiliary\Build\Microsoft.VCToolsVersion.default.txt'
       - run: mvn '-Dnar.windows.msvc.dir=${{ env.VCInstallDir }}\..' '-Dnar.windows.msvc.version=${{ env.VisualStudioVersion }}' '-Dnar.windows.sdk.dir=${{ env.WindowsSdkDir }}' '-Dnar.windows.sdk.version=${{ env.WindowsSDKVersion }}' --batch-mode --errors --update-snapshots verify
