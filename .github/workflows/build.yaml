@@ -14,21 +14,25 @@ jobs:
         exclude:
           - arch: x86
             os: macos
-          - arch: x86
-            os: ubuntu
     runs-on: ${{ matrix.os }}-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
         with:
-          distribution: temurin
+          distribution: zulu
           java-version: 11
           architecture: ${{ matrix.arch }}
           cache: maven
-      - if: matrix.os == 'ubuntu'
+      - if: matrix.os == 'ubuntu' && matrix.arch == 'x64'
         uses: awalsh128/cache-apt-pkgs-action@v1
         with:
           packages: libgl1-mesa-dev
+      - if: matrix.os == 'ubuntu' && matrix.arch == 'x86'
+        run: sudo dpkg --add-architecture i386 && sudo apt update
+      - if: matrix.os == 'ubuntu' && matrix.arch == 'x86'
+        uses: awalsh128/cache-apt-pkgs-action@v1
+        with:
+          packages: libgl1-mesa-dev:i386 gcc-multilib
       - if: matrix.os == 'windows'
         uses: ilammy/msvc-dev-cmd@v1
         with:
